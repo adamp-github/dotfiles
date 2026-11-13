@@ -6,7 +6,21 @@ omarchy pkg add librewolf-bin
 
 # Ensure LibreWolf stays registered as default
 xdg-mime default librewolf.desktop x-scheme-handler/http x-scheme-handler/https text/html
- 
+
+# NTFS support: FUSE driver plus userspace tools (ntfsfix, ntfsclone, mkntfs, ...)
+omarchy pkg add ntfs-3g ntfsprogs
+
+# Gaming: Steam
+# Install the lib32 graphics drivers first so Steam's virtual
+# lib32-vulkan-driver dependency resolves to this GPU's driver instead of
+# whichever provider pacman would pick first under --noconfirm.
+omarchy install gaming gpu-lib32
+omarchy pkg add steam
+
+# Plex desktop client (AUR). squashfs-tools is a makedep; yay needs it to
+# unpack Plex's snap before packaging.
+omarchy pkg add squashfs-tools
+omarchy pkg aur add plex-desktop
 
 # Example: Add any custom web apps or TUIs you use
 omarchy-webapp-install "Apple Notes" "https://www.icloud.com/notes"

@@ -26,4 +26,9 @@ require("hypr.autostart")
 require("default.hypr.toggles")
 
 -- Add any other personal Hyprland configuration below.
+
+-- Keep Plex on workspace 3 (XWayland reports "Plex", native Wayland
+-- reports "tv.plex.Plex"; the ~/.local/bin/Plex wrapper forces XWayland).
+o.window({ class = "^(Plex|tv\\.plex\\.Plex)$" }, { workspace = "3" })
+
 -- o.window("qemu", { workspace = "5" })

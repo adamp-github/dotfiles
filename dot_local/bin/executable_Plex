@@ -1,0 +1,6 @@
+#!/bin/bash
+# Plex Desktop's bundled QtWebEngine fails to create EGL shared contexts under
+# Wayland on NVIDIA (EGL_BAD_CONTEXT flood, black window). Its own launcher
+# defaults to X11, so force XWayland for this app only.
+export QT_QPA_PLATFORM=xcb
+exec /usr/bin/Plex "$@"

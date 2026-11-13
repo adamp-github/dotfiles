@@ -1,0 +1,6 @@
+#!/bin/bash
+# Strip any Chromium-only flags (like --user-data-dir=...) passed by Omarchy web app .desktop files
+URL="$1"
+
+exec setsid uwsm-app -- librewolf --new-window "$URL"
+

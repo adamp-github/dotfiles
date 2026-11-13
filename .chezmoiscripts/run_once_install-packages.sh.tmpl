@@ -1,0 +1,15 @@
+#!/bin/bash
+set -euo pipefail
+
+# Install extra packages via Omarchy's wrapper
+omarchy pkg add librewolf-bin
+
+# Ensure LibreWolf stays registered as default
+xdg-mime default librewolf.desktop x-scheme-handler/http x-scheme-handler/https text/html
+ 
+
+# Example: Add any custom web apps or TUIs you use
+omarchy-webapp-install "Apple Notes" "https://www.icloud.com/notes"
+omarchy-webapp-install "Apple Photos" "https://www.icloud.com/photos"
+omarchy-webapp-install "Apple iCloud Drive" "https://www.icloud.com/iclouddrive"
+omarchy-webapp-install "Apple iCloud" "https://www.icloud.com"

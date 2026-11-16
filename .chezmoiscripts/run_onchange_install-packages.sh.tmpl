@@ -13,8 +13,10 @@ xdg-mime default librewolf.desktop x-scheme-handler/http x-scheme-handler/https 
 omarchy pkg add squashfs-tools
 omarchy pkg aur add plex-desktop
 
-# Custom web apps
-omarchy-webapp-install "Apple Notes" "https://www.icloud.com/notes"
-omarchy-webapp-install "Apple Photos" "https://www.icloud.com/photos"
-omarchy-webapp-install "Apple iCloud Drive" "https://www.icloud.com/iclouddrive"
-omarchy-webapp-install "Apple iCloud" "https://www.icloud.com"
+# Custom web apps. The third argument is the icon; an empty string means
+# "fetch the site's icon", and it keeps the command from dropping into
+# interactive prompts when run from chezmoi.
+omarchy-webapp-install "Apple Notes" "https://www.icloud.com/notes" ""
+omarchy-webapp-install "Apple Photos" "https://www.icloud.com/photos" ""
+omarchy-webapp-install "Apple iCloud Drive" "https://www.icloud.com/iclouddrive" ""
+omarchy-webapp-install "Apple iCloud" "https://www.icloud.com" ""

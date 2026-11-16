@@ -18,6 +18,11 @@ omarchy pkg aur add plex-desktop
 omarchy pkg add tailscale
 sudo systemctl enable --now tailscaled.service
 
+# Scanners used by the global git hooks in ~/.config/git/hooks
+omarchy pkg add gitleaks shellcheck uv
+# semgrep is not packaged for Arch, so install the official PyPI build with uv
+command -v semgrep >/dev/null || uv tool install semgrep
+
 # Custom web apps. The third argument is the icon; an empty string means
 # "fetch the site's icon", and it keeps the command from dropping into
 # interactive prompts when run from chezmoi.

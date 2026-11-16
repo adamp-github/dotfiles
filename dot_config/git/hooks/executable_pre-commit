@@ -1,0 +1,92 @@
+#!/bin/bash
+# Global pre-commit hook, enabled with core.hooksPath = ~/.config/git/hooks.
+#
+# 1. runs the repository's own pre-commit hook (hidden while core.hooksPath is set)
+# 2. scans the staged changes with gitleaks, shellcheck and semgrep
+#
+# Bypasses:
+#   git commit --no-verify      skip every hook
+#   SKIP_SAST=1 git commit ...  skip gitleaks, shellcheck and semgrep
+#   SKIP_GITLEAKS=1 ...         skip a single scanner
+#                               (also SKIP_SHELLCHECK, SKIP_SEMGREP)
+
+set -uo pipefail
+
+note() { printf 'pre-commit: %s\n' "$*" >&2; }
+
+status=0
+
+common_dir=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null) || common_dir=""
+repo_hook="${common_dir:+$common_dir/hooks/pre-commit}"
+if [[ -n $repo_hook && -x $repo_hook ]] && [[ $(realpath "$repo_hook") != $(realpath "$0") ]]; then
+  "$repo_hook" "$@" || status=$?
+fi
+
+[[ ${SKIP_SAST:-0} == 1 ]] && exit "$status"
+
+mapfile -d '' -t staged < <(git diff --cached --name-only -z --diff-filter=ACMR)
+
+if [[ ${SKIP_GITLEAKS:-0} != 1 ]]; then
+  # The version check catches broken launchers (e.g. a mise shim without a
+  # configured version), which must not be mistaken for a finding.
+  if command -v gitleaks >/dev/null && gitleaks version >/dev/null 2>&1; then
+    gitleaks git --pre-commit --staged --redact --verbose --no-banner
+    rc=$?
+    case $rc in
+      0) ;;
+      1) note "gitleaks found secrets in the staged changes"; status=1 ;;
+      *) note "gitleaks could not run (exit $rc), skipping" ;;
+    esac
+  else
+    note "gitleaks not available, skipping secret scan"
+  fi
+fi
+
+if [[ ${SKIP_SHELLCHECK:-0} != 1 ]]; then
+  shell_files=()
+  for file in "${staged[@]}"; do
+    [[ -f $file ]] || continue
+    case $file in
+      *.sh | *.bash) shell_files+=("$file") ;;
+      *)
+        if [[ -x $file ]] && head -n 1 "$file" 2>/dev/null | grep -qE '^#!.*(ba|da|k|z)?sh([[:space:]]|$)'; then
+          shell_files+=("$file")
+        fi
+        ;;
+    esac
+  done
+  if ((${#shell_files[@]})); then
+    if command -v shellcheck >/dev/null && shellcheck --version >/dev/null 2>&1; then
+      shellcheck "${shell_files[@]}"
+      rc=$?
+      case $rc in
+        0) ;;
+        1) note "shellcheck reported issues in staged scripts"; status=1 ;;
+        *) note "shellcheck could not run (exit $rc), skipping" ;;
+      esac
+    else
+      note "shellcheck not available, skipping"
+    fi
+  fi
+fi
+
+if [[ ${SKIP_SEMGREP:-0} != 1 ]] && ((${#staged[@]})); then
+  if command -v semgrep >/dev/null; then
+    # p/default rules are fetched from the semgrep registry; the code being
+    # scanned is not uploaded and metrics are disabled.
+    SEMGREP_SEND_METRICS=off semgrep scan \
+      --config p/default --error --quiet --disable-version-check \
+      --exclude node_modules --exclude .venv --exclude dist --exclude build \
+      "${staged[@]}"
+    rc=$?
+    case $rc in
+      0) ;;
+      1) note "semgrep reported findings in staged files"; status=1 ;;
+      *) note "semgrep could not run (exit $rc), skipping" ;;
+    esac
+  else
+    note "semgrep not installed, skipping SAST"
+  fi
+fi
+
+exit "$status"

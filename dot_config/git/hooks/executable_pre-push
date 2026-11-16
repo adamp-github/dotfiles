@@ -1,0 +1,69 @@
+#!/bin/bash
+# Global pre-push hook, enabled with core.hooksPath = ~/.config/git/hooks.
+#
+# 1. runs the repository's own pre-push hook
+# 2. scans the whole working tree with semgrep and the whole history with gitleaks,
+#    catching anything that was committed with --no-verify or before the hooks
+#    were installed
+#
+# Bypasses:
+#   git push --no-verify       skip every hook
+#   SKIP_SAST=1 git push ...   skip the scans
+#   SKIP_GITLEAKS=1 / SKIP_SEMGREP=1 to skip a single scanner
+
+set -uo pipefail
+
+note() { printf 'pre-push: %s\n' "$*" >&2; }
+
+status=0
+
+# Consume stdin once, then replay it to the repository's own hook.
+refs=""
+pushing=0
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [[ -n ${local_ref:-} ]] || continue
+  refs+="$local_ref $local_sha $remote_ref $remote_sha"$'\n'
+  [[ $local_sha =~ ^0+$ ]] || pushing=1
+done
+
+common_dir=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null) || common_dir=""
+repo_hook="${common_dir:+$common_dir/hooks/pre-push}"
+if [[ -n $repo_hook && -x $repo_hook ]] && [[ $(realpath "$repo_hook") != $(realpath "$0") ]]; then
+  printf '%s' "$refs" | "$repo_hook" "$@" || status=$?
+fi
+
+[[ ${SKIP_SAST:-0} == 1 ]] && exit "$status"
+((pushing)) || exit "$status" # branch deletions have nothing to scan
+
+if [[ ${SKIP_GITLEAKS:-0} != 1 ]]; then
+  if command -v gitleaks >/dev/null && gitleaks version >/dev/null 2>&1; then
+    gitleaks git --redact --verbose --no-banner
+    rc=$?
+    case $rc in
+      0) ;;
+      1) note "gitleaks found secrets in the repository history"; status=1 ;;
+      *) note "gitleaks could not run (exit $rc), skipping" ;;
+    esac
+  else
+    note "gitleaks not available, skipping secret scan"
+  fi
+fi
+
+if [[ ${SKIP_SEMGREP:-0} != 1 ]]; then
+  if command -v semgrep >/dev/null && semgrep --version >/dev/null 2>&1; then
+    SEMGREP_SEND_METRICS=off semgrep scan \
+      --config p/default --error --quiet --disable-version-check \
+      --exclude node_modules --exclude .venv --exclude dist --exclude build \
+      .
+    rc=$?
+    case $rc in
+      0) ;;
+      1) note "semgrep reported findings in the repository"; status=1 ;;
+      *) note "semgrep could not run (exit $rc), skipping" ;;
+    esac
+  else
+    note "semgrep not installed, skipping SAST"
+  fi
+fi
+
+exit "$status"

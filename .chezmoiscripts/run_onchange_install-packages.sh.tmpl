@@ -1,8 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
-# Install extra packages via Omarchy's wrapper
-omarchy pkg add librewolf-bin
+# Install extra packages via Omarchy's wrapper. LibreWolf is in Arch's extra
+# repo, so it goes through pacman (the AUR-only librewolf-bin is not needed).
+omarchy pkg add librewolf
 
 # Ensure LibreWolf stays registered as default
 xdg-mime default librewolf.desktop x-scheme-handler/http x-scheme-handler/https text/html

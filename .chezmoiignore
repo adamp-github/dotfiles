@@ -1,0 +1,14 @@
+# Files kept in the repo but not applied anywhere.
+README.md
+
+# This repo targets the two Omarchy machines. A macOS machine should use its
+# own repo, but ignore the Linux-only paths so an accidental clone cannot
+# litter $HOME.
+{{- if ne .chezmoi.os "linux" }}
+.config/hypr
+.config/omarchy
+.config/uwsm
+.local/bin/Plex
+.local/bin/omarchy-launch-webapp
+.chezmoiscripts/run_librewolf-proton-pass.sh
+{{- end }}

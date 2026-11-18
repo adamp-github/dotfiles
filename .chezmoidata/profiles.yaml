@@ -1,0 +1,32 @@
+# Per-machine facts.
+#
+# Everything a template needs that differs between machines lives here, keyed
+# by profile, so changing a machine is one commit plus `chezmoi apply`.
+#
+# Which profile a machine uses is decided in .chezmoi.toml.tmpl (hostname ->
+# profile) and stored in ~/.config/chezmoi/chezmoi.toml. That file is machine
+# state and is deliberately not tracked.
+profiles:
+  personal-desktop:
+    hostname: 5800x
+    git:
+      name: adamp-github
+      email: 78767726+adamp-github@users.noreply.github.com
+    hypr:
+      gdkScale: 1
+    bar:
+      power: false
+    packages:
+      plex: true
+
+  personal-laptop:
+    hostname: dl7390
+    git:
+      name: adamp-github
+      email: 78767726+adamp-github@users.noreply.github.com
+    hypr:
+      gdkScale: 2
+    bar:
+      power: true
+    packages:
+      plex: false

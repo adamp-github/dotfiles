@@ -1,3 +1,5 @@
+{{- $p := get .profiles .profile -}}
+{{- if not $p }}{{ fail (printf "unknown profile %q; add it to .chezmoidata/profiles.yaml" .profile) }}{{ end -}}
 #!/bin/bash
 set -euo pipefail
 
@@ -8,11 +10,13 @@ omarchy pkg add librewolf
 # Ensure LibreWolf stays registered as default
 xdg-mime default librewolf.desktop x-scheme-handler/http x-scheme-handler/https text/html
 
-# Plex desktop client (AUR). squashfs-tools is a makedep; yay needs it to
-# unpack Plex's snap before packaging.
+{{ if $p.packages.plex -}}
+# Plex desktop client (AUR), desktop only. squashfs-tools is a makedep;
+# yay needs it to unpack Plex's snap before packaging.
 omarchy pkg add squashfs-tools
 omarchy pkg aur add plex-desktop
 
+{{ end -}}
 # Tailscale mesh VPN. Logging in is left to the user: `tailscale up` waits for
 # browser authentication, which would block chezmoi apply.
 omarchy pkg add tailscale

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Global pre-commit hook, enabled with core.hooksPath = ~/.config/git/hooks.
 #
 # 1. runs the repository's own pre-commit hook (hidden while core.hooksPath is set)
@@ -24,7 +24,12 @@ fi
 
 [[ ${SKIP_SAST:-0} == 1 ]] && exit "$status"
 
-mapfile -d '' -t staged < <(git diff --cached --name-only -z --diff-filter=ACMR)
+# Read the staged paths NUL-separated, without `mapfile` so this also works
+# with the bash 3.2 that macOS ships.
+staged=()
+while IFS= read -r -d '' file; do
+  staged+=("$file")
+done < <(git diff --cached --name-only -z --diff-filter=ACMR)
 
 if [[ ${SKIP_GITLEAKS:-0} != 1 ]]; then
   # The version check catches broken launchers (e.g. a mise shim without a

@@ -1,3 +1,5 @@
+{{- $p := get .profiles .profile -}}
+{{- if not $p }}{{ fail (printf "unknown profile %q; add it to .chezmoidata/profiles.yaml" .profile) }}{{ end -}}
 # See https://git-scm.com/docs/git-config
 
 [alias]
@@ -28,12 +30,12 @@
 	autoupdate = true        # Apply stored conflict resolutions automatically
 [credential "https://github.com"]
 	helper = 
-	helper = !/home/ap/.local/share/mise/shims/gh auth git-credential
+	helper = !gh auth git-credential
 [credential "https://gist.github.com"]
 	helper = 
-	helper = !/home/ap/.local/share/mise/shims/gh auth git-credential
+	helper = !gh auth git-credential
 [user]
-	name = adamp-github
-	email = 78767726+adamp-github@users.noreply.github.com
+	name = {{ $p.git.name | quote }}
+	email = {{ $p.git.email | quote }}
 [core]
 	hooksPath = ~/.config/git/hooks

@@ -1,3 +1,5 @@
+{{- $p := get .profiles .profile -}}
+{{- if not $p }}{{ fail (printf "unknown profile %q; add it to .chezmoidata/profiles.yaml" .profile) }}{{ end -}}
 {
   "version": 1,
   "idle": {
@@ -73,6 +75,9 @@
           "id": "omarchy.tray"
         },
         {
+          "id": "nosignal.gliff-manager"
+        },
+        {
           "id": "omarchy.tailscale"
         },
         {
@@ -92,10 +97,10 @@
         },
         {
           "id": "omarchy.monitor"
-        },
+        }{{ if $p.bar.power }},
         {
           "id": "omarchy.power"
-        }
+        }{{ end }}
       ],
       "tray": [
         {

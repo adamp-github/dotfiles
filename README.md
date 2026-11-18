@@ -12,7 +12,7 @@ state, not tracked). Every per-machine fact lives in `.chezmoidata/profiles.yaml
 | profile | hostname | notes |
 | --- | --- | --- |
 | `personal-desktop` | `5800x` | 24" screen, `GDK_SCALE=1`, Plex, no bar power widget |
-| `personal-laptop` | `dl7390` | 14" screen, `GDK_SCALE=2`, no Plex, bar power/battery widget |
+| `personal-laptop` | `dl7390` | 14" screen, `GDK_SCALE=2`, Plex, bar power/battery widget |
 
 Unknown hosts fall back to `personal-laptop` (it installs the least). To
 override, run `chezmoi edit-config` and change `profile`.

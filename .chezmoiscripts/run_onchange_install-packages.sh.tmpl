@@ -11,8 +11,8 @@ omarchy pkg add librewolf
 xdg-mime default librewolf.desktop x-scheme-handler/http x-scheme-handler/https text/html
 
 {{ if $p.packages.plex -}}
-# Plex desktop client (AUR), desktop only. squashfs-tools is a makedep;
-# yay needs it to unpack Plex's snap before packaging.
+# Plex desktop client (AUR); enabled per profile. squashfs-tools is a
+# makedep; yay needs it to unpack Plex's snap before packaging.
 omarchy pkg add squashfs-tools
 omarchy pkg aur add plex-desktop
 

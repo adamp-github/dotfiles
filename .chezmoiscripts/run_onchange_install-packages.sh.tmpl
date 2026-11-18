@@ -23,12 +23,6 @@ omarchy pkg add gitleaks shellcheck uv
 # semgrep is not packaged for Arch, so install the official PyPI build with uv
 command -v semgrep >/dev/null || uv tool install semgrep
 
-# signal-cli for the Hermes Signal gateway. The native build installs a
-# self-contained /usr/bin/signal-cli, so no JRE is needed, and it conflicts
-# with the Java-based AUR `signal-cli`. Linking the account is interactive
-# (`signal-cli link -n "HermesAgent"`), so it is left to the user.
-omarchy pkg aur add signal-cli-native-bin
-
 # Custom web apps. The third argument is the icon; an empty string means
 # "fetch the site's icon", and it keeps the command from dropping into
 # interactive prompts when run from chezmoi.
